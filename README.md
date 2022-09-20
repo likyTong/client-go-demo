@@ -97,3 +97,5 @@
 4. 创建 RESTClient 实例，入参数配置对象；
 5. 调用 RESTClient 实例的方法向 kubernetes 的 API Server 发起请求，编码用 fluent 风格将各种参数传入（如指定的 namespace、资源等）,如果是查询类请求，还要传入数据结构实例的指针，该数据结构用于接受 kubernetes 返回查询结果
 
+### Clientset
+
