@@ -4,10 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -35,6 +37,7 @@ func main() {
 		clean(clientset)
 	} else {
 		createNamespace(clientset)
+		createDeployment(clientset)
 	}
 }
 
@@ -57,4 +60,25 @@ func createNamespace(clientSet *kubernetes.Clientset) {
 		panic(err.Error())
 	}
 	fmt.Printf("create namespace %s \n", result.GetName())
+}
+
+// 新建 deployment
+func createDeployment(clientSet *kubernetes.Clientset) {
+	deploymentClient := clientSet.AppsV1().Deployments(NAMESPAECE)
+	deployment := &appsv1.Deployment{
+		ObjectMeta: v12.ObjectMeta{
+			Name: DEPLOYMENT_NAME,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: pointer.Int32Ptr(2),
+			Selector: &v12.LabelSelector{MatchLabels: map[string]string{"app": "tomcat"}},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: v12.ObjectMeta{Labels: map[string]string{"app": "tomcat"}}, Spec: v1.PodSpec{Containers: []v1.Container{{Name: "http", Image: "tocat:8.0.18-jre8", ImagePullPolicy: "IfNotPresent", Ports: []v1.ContainerPort{{Name: "http", Protocol: v1.ProtocolSCTP, ContainerPort: 8080}}}}}},
+		},
+	}
+	result, err := deploymentClient.Create(context.TODO(), deployment, v12.CreateOptions{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("create deployment %s\n", result.GetName())
 }
