@@ -95,17 +95,17 @@ func createService(clientSet *kubernetes.Clientset) {
 func createDeployment(clientSet *kubernetes.Clientset) {
 	deploymentClient := clientSet.AppsV1().Deployments(NAMESPAECE)
 	deployment := &appsv1.Deployment{
-		ObjectMeta: v12.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: DEPLOYMENT_NAME,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: pointer.Int32Ptr(2),
-			Selector: &v12.LabelSelector{MatchLabels: map[string]string{"app": "tomcat"}},
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: v12.ObjectMeta{Labels: map[string]string{"app": "tomcat"}}, Spec: v1.PodSpec{Containers: []v1.Container{{Name: "http", Image: "tocat:8.0.18-jre8", ImagePullPolicy: "IfNotPresent", Ports: []v1.ContainerPort{{Name: "http", Protocol: v1.ProtocolSCTP, ContainerPort: 8080}}}}}},
+			Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": "tomcat"}},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "tomcat"}}, Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: "http", Image: "tocat:8.0.18-jre8", ImagePullPolicy: "IfNotPresent", Ports: []corev1.ContainerPort{{Name: "http", Protocol: corev1.ProtocolSCTP, ContainerPort: 8080}}}}}},
 		},
 	}
-	result, err := deploymentClient.Create(context.TODO(), deployment, v12.CreateOptions{})
+	result, err := deploymentClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
 		panic(err)
 	}
