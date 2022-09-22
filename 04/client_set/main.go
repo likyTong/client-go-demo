@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	v1 "k8s.io/api/core/v1"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -46,15 +46,44 @@ func clean(clientset *kubernetes.Clientset) {
 func createNamespace(clientSet *kubernetes.Clientset) {
 	namespaceClient := clientSet.CoreV1().Namespaces()
 
-	namespace := &v1.Namespace{
-		ObjectMeta: v12.ObjectMeta{
+	namespace := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: NAMESPAECE,
 		},
 	}
 
-	result, err := namespaceClient.Create(context.TODO(), namespace, v12.CreateOptions{})
+	result, err := namespaceClient.Create(context.TODO(), namespace, metav1.CreateOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
 	fmt.Printf("create namespace %s \n", result.GetName())
+}
+
+// 创建 service
+func createService(clientSet *kubernetes.Clientset) {
+	serviceClient := clientSet.CoreV1().Services(NAMESPAECE)
+
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: SERVICE_NAME,
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name:     "http",
+					Port:     8080,
+					NodePort: 30080,
+				},
+			},
+			Selector: map[string]string{
+				"app": "tomcat",
+			},
+			Type: corev1.ServiceTypeNodePort,
+		},
+	}
+	result, err := serviceClient.Create(context.TODO(), service, metav1.CreateOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Printf("Create service %s\n", result.GetName())
 }
