@@ -62,7 +62,7 @@
 
 ### 官方文档速查
 
-地址 [kubernetest-api](https://kubernetes.io/docs/reference/kubernetes-api/)
+地址 [kubernetest-api](https://v1-23.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/)
 
 
 
