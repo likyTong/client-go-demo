@@ -19,6 +19,7 @@ const (
 )
 
 func main() {
+	// cmd: ./main -operate create or clean
 	operate := flag.String("operate", "create", "operate type: create or clean")
 	flag.Parse()
 
@@ -31,18 +32,35 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("operation is %v\n", operate)
+	fmt.Printf("operation is %v\n", *operate)
 
 	if "clean" == *operate {
 		clean(clientset)
 	} else {
 		createNamespace(clientset)
+		createService(clientset)
 		createDeployment(clientset)
 	}
 }
 
 func clean(clientset *kubernetes.Clientset) {
-	//clientset.AppsV1().Deployments(NAMESPAECE).Delete(context.TODO(), DEPLOYMENT_NAME)
+	// 删除 service
+	err := clientset.CoreV1().Services(NAMESPAECE).Delete(context.TODO(), SERVICE_NAME, metav1.DeleteOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// 删除 deployment
+	err = clientset.AppsV1().Deployments(NAMESPAECE).Delete(context.TODO(), DEPLOYMENT_NAME, metav1.DeleteOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	// 删除 namespace
+	err = clientset.CoreV1().Namespaces().Delete(context.TODO(), NAMESPAECE, metav1.DeleteOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Println("Delete Done")
 }
 
 // 新建 namespace
@@ -100,9 +118,34 @@ func createDeployment(clientSet *kubernetes.Clientset) {
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: pointer.Int32Ptr(2),
-			Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": "tomcat"}},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "tomcat",
+				},
+			},
 			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "tomcat"}}, Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: "http", Image: "tocat:8.0.18-jre8", ImagePullPolicy: "IfNotPresent", Ports: []corev1.ContainerPort{{Name: "http", Protocol: corev1.ProtocolSCTP, ContainerPort: 8080}}}}}},
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app": "tomcat",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:            "http",
+							Image:           "tomcat:8.0.18-jre8",
+							ImagePullPolicy: "IfNotPresent",
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "http",
+									Protocol:      corev1.ProtocolSCTP,
+									ContainerPort: 8080,
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 	result, err := deploymentClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
