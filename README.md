@@ -99,3 +99,60 @@
 
 ### Clientset
 
+
+
+## Reflector 原理
+
+![reflector](./image/reflector.png)
+
+### Reflector 的创建
+
+```go
+func NewReflector(lw ListerWatcher, expectedType interface{}, store Store, resyncPeriod time.Duration) *Reflector {
+	...
+}
+```
+
+参数说明：
+
+* Lw  : interface，包含了 interface Lister 和 watcher。通过 ListerWatcher 获取初始化指定资源的列表和监听指定资源变化
+* expectedType: 指定资源类型
+* Store: 指定存储，需要实现 store 这个 interface
+* resyncPeriod: 同步周期
+
+### List 与 watch
+
+保证可靠性、实时性和顺序性
+
+* List: 指定类型资源对象的全量更新。并将其更新到缓存当中
+
+  ```powershell
+  curl -iv http:127.0.0.1:8001/api/v1/namespaces/{namespaces}/pods
+  ```
+
+* Watch: 指定类型资源对象的增量更新
+
+  ```powershell
+  curl -iv http:127.0.0.1:8001/api/v1/namespaces/{namespaces}/pods\?watch\=true
+  ```
+
+操作：
+
+```powershell
+# 打开代理
+kubectle proxy
+# 通过 localhost:8001去访问
+curl http:127.0.0.1:8001/api/v1/namespaces/default/pods
+# 修改 pod 里面的资源
+kubectl edit pod pod-name
+```
+
+### ResourceVersion 与 Bookmarks
+
+* resourceVersion
+  * 保证客户端数据一致性和顺序性
+  * 并发控制
+* bookmarks
+  * 减少 API Server 负载
+  * 更新客户端保存的最近一次 resourceVersion
+
