@@ -156,3 +156,18 @@ kubectl edit pod pod-name
   * 减少 API Server 负载
   * 更新客户端保存的最近一次 resourceVersion
 
+
+
+## DeltaFIFO 原理
+
+### store的类型
+
+* cache: 实现 store，利用 threadSafeMap 存放数据
+* UndeltaStore: 实现 store，利用 cache 存放数据，数据变更时通过 PushFunc 发生当前完整状态
+* FIFO: 实现 Queue（包含 store），利用自己内部的 items 数据结构存放数据
+* DeltaFIFO :
+* Heap: 实现  store，利用 data 数据结构存放数据，实现堆数据结构，用于优先队列
+* ExpirationCache: 实现 store，利用 threadSafeMap 存放数据
+
+
+
