@@ -169,5 +169,27 @@ kubectl edit pod pod-name
 * Heap: 实现  store，利用 data 数据结构存放数据，实现堆数据结构，用于优先队列
 * ExpirationCache: 实现 store，利用 threadSafeMap 存放数据
 
+### DeltaFIFO 的应用场景
+
+DeltaFIFO 主要用在一下场景中：
+
+* 希望处理每个对象的变化最多一次
+* 当处理一个对象时，希望知道这个对象与你上次处理时，发生了哪些变化
+* 希望一个对象删除时，你仍然能够处理它
+* 能够周期性的重新处理所有的对象
+
+### 事件的生产和消费
+
+#### 生产
+
+* Reflector 的 List
+* Reflector 的 Watch
+* Reflector 的 Resync
+
+#### 消费
+
+* 事件派发到 work queue
+* 刷新本地缓存
+
 
 
